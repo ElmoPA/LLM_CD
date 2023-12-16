@@ -10,26 +10,21 @@ def cmu_humanoid_run_gaps(random_state=None, **kwargs):
   """Requires a CMU humanoid to run down a corridor with gaps."""
   task = {
     "target_velocity": 3.0,
-    "gap_length": (.5, 1.25),
     "corridor_length": 100,
+    "gap_length": distributions.Uniform(.3, 2.5,)
   }
-  for param, value in kwargs:
+  for param, value in kwargs.items():
     task[param] = value
   gap_length = task["gap_length"]
-  # Build a position-controlled CMU humanoid walker.
   walker = cmu_humanoid.CMUHumanoidPositionControlled(
       observable_options={'egocentric_camera': dict(enabled=True)})
 
-  # Build a corridor-shaped arena with gaps, where the sizes of the gaps and
-  # platforms are uniformly randomized.
   arena = corr_arenas.GapsCorridor(
-      platform_length=distributions.Uniform(.3, 2.5),
-      gap_length=distributions.Uniform(gap_length[0], gap_length[1]),
+      platform_length=distributions.Uniform(.5, 2.5),
+      gap_length=gap_length,
       corridor_width=10,
       corridor_length=task["corridor_length"])
 
-  # Build a task that rewards the agent for running down the corridor at a
-  # specific velocity.
   task = corr_tasks.RunThroughCorridor(
       walker=walker,
       arena=arena,

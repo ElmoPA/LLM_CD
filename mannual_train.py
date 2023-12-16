@@ -22,7 +22,7 @@ env_wrap = DMCGym(env)
 
 log_dir = "./logs/"
 
-model = PPO("MlpPolicy", env_wrap, verbose=1, batch_size=64, tensorboard_log="./logs/")
+model = PPO("MlpPolicy", env_wrap, verbose=0, batch_size=512, tensorboard_log="./logs/")
 
 class SummaryWriterCallback(BaseCallback):
     def _on_training_start(self):
@@ -30,17 +30,23 @@ class SummaryWriterCallback(BaseCallback):
 
         # Save reference to tensorboard formatter object
         # note: the failure case (not formatter found) is not handled here, should be done with try/except.
-        self.tb_writer = SummaryWriter('./logs/')
+        output_formats = self.logger.output_formats
+
+        self.tb_formatter = next(formatter for formatter in output_formats if isinstance(formatter, TensorBoardOutputFormat))
+
+        self.overall = 0.0
 
     def _on_step(self) -> bool:
         '''
         Log my_custom_reward every _log_freq(th) to tensorboard for each environment
         '''
+        self.overall += self.locals['rewards']
+        
         if self.n_calls % self._log_freq == 0:
-            self.tb_writer.add_scalar('Reward', self.locals['rewards'][0], self.num_timesteps)
+            self.tb_formatter.writer.add_scalar('Average Return', self.overall/self.n_calls, self.n_calls)
         return True
 
-model.learn(total_timesteps=50000, tb_log_name="first_run", callback=SummaryWriterCallback())
+model.learn(total_timesteps=1000000, tb_log_name="first_run", callback=SummaryWriterCallback())
 model.save("ppo_humanoid")
 # Define a uniform random policy.
 # for i in observation_spec.values():

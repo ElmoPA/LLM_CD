@@ -26,8 +26,6 @@ def _spec_to_box(spec, dtype=np.float32):
         maxs.append(mx)
     low = np.concatenate(mins, axis=0).astype(dtype)
     high = np.concatenate(maxs, axis=0).astype(dtype)
-    print(low.shape)
-    print(high.shape)
     assert low.shape == high.shape
     return Box(low, high, dtype=dtype)
 

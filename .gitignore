@@ -1,3 +1,4 @@
 /logs/
 /examples/
+/__pycache__/
 ppo_humanoid.zip

@@ -1,9 +1,9 @@
 from utils.custom_environment import cmu_humanoid_run_gaps
-from dm_control import suite
 from dm_control import viewer
+from dm_control.composer.variation import distributions
 import numpy as np
 
-env = cmu_humanoid_run_gaps(gap_length=4.0)
+env = cmu_humanoid_run_gaps(gap_length=distributions.Uniform(0, 2.0))
 action_spec = env.action_spec()
 
 # Define a uniform random policy.

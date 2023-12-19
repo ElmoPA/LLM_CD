@@ -1,7 +1,7 @@
 import argparse
 from utils.custom_environment import cmu_humanoid_run_gaps
 from utils.DMC_Gym import DMCGym
-from utils.callbacks import TensorboardCallback 
+from utils.callbacks import TensorBoardCallback
 from dm_control.composer.variation import distributions
 from stable_baselines3 import PPO
 
@@ -13,10 +13,11 @@ env_kwargs = {
 }
 
 parser = argparse.ArgumentParser(description='parameters input')
-parser.add_argument('--n', type=str)
-parser.add_argument('--lr', type=float, default=4e-3)
+parser.add_argument('--ld', type=str)
+parser.add_argument('--lr', type=float, default=4e-4)
 parser.add_argument('--ts', type=int, default=100000)
 parser.add_argument('--bs', type=int, default=64)
+parser.add_argument('--name', type=str)
 args = parser.parse_args()
 
 env = cmu_humanoid_run_gaps()
@@ -24,18 +25,16 @@ action_spec = env.action_spec()
 observation_spec = env.observation_spec()
 env_wrap = DMCGym(env)
 
-policy_kw = dict(net_arch=dict(pi=[512, 512, 512, 512], vf=[512, 512, 512, 512]))
-model = PPO("MlpPolicy", env_wrap,
-            learning_rate=args.lr, 
-            verbose=0, 
-            ent_coef=0.01,
-            vf_coef=1,
-            policy_kwargs=policy_kw,
-            batch_size=args.bs)
+log_dir = "./logs/"
 
+if args.ld:
+  model = PPO.load(args.ld)
+else:
+  model = PPO.load("logs/rl_model_1000000_steps.zip")
+model.set_env(env_wrap)
 
-model.learn(total_timesteps=args.ts,
-            progress_bar=True,
-            callback=TensorboardCallback('logs/' + args.n, 'logs/time_step.json'))
-model.save("logs/" + args.n)
+model.learn(total_timesteps=args.ts, 
+          progress_bar=True,
+          callback=TensorBoardCallback())
 
+model.save("logs/" + args.name)

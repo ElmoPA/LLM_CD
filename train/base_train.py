@@ -14,9 +14,9 @@ env_kwargs = {
 
 parser = argparse.ArgumentParser(description='parameters input')
 parser.add_argument('--n', type=str)
-parser.add_argument('--lr', type=float, default=4e-3)
+parser.add_argument('--lr', type=float, default=1e-3)
 parser.add_argument('--ts', type=int, default=100000)
-parser.add_argument('--bs', type=int, default=64)
+parser.add_argument('--bs', type=int, default=1024)
 args = parser.parse_args()
 
 env = cmu_humanoid_run_gaps()
@@ -27,7 +27,7 @@ env_wrap = DMCGym(env)
 policy_kw = dict(net_arch=dict(pi=[512, 512, 512, 512], vf=[512, 512, 512, 512]))
 model = PPO("MlpPolicy", env_wrap,
             learning_rate=args.lr, 
-            verbose=0, 
+            verbose=1, 
             ent_coef=0.01,
             vf_coef=1,
             policy_kwargs=policy_kw,

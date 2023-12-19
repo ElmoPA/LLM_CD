@@ -14,10 +14,7 @@ env_kwargs = {
 
 parser = argparse.ArgumentParser(description='parameters input')
 parser.add_argument('--ld', type=str)
-parser.add_argument('--lr', type=float, default=4e-4)
-parser.add_argument('--ts', type=int, default=100000)
-parser.add_argument('--bs', type=int, default=64)
-parser.add_argument('--name', type=str)
+parser.add_argument('--n', type=str)
 args = parser.parse_args()
 
 env = cmu_humanoid_run_gaps()
@@ -30,7 +27,8 @@ log_dir = "./logs/"
 if args.ld:
   model = PPO.load(args.ld)
 else:
-  model = PPO.load("logs/rl_model_1000000_steps.zip")
+  raise Exception("No load file specified")
+
 model.set_env(env_wrap)
 
 model.learn(total_timesteps=args.ts, 

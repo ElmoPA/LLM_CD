@@ -1,3 +1,4 @@
+import numpy as np
 from stable_baselines3.common.logger import configure
 from stable_baselines3.common.callbacks import BaseCallback
 from stable_baselines3.common.logger import TensorBoardOutputFormat
@@ -48,12 +49,13 @@ class CurrentCheckCallback(BaseCallback):
         return True
 
 import json
+import mlflow
 
-def save_total_timesteps(file_path, total_timesteps):
+def save_last_timestep(file_path, total_timesteps):
     with open(file_path, 'w') as f:
         json.dump({'total_timesteps': total_timesteps}, f)
 
-def load_total_timesteps(file_path):
+def load_last_timestep(file_path):
     try:
         with open(file_path, 'r') as f:
             data = json.load(f)
@@ -61,37 +63,63 @@ def load_total_timesteps(file_path):
     except FileNotFoundError:
         return 0
 
-import os
-import time
-from stable_baselines3.common.callbacks import BaseCallback
-from torch.utils.tensorboard import SummaryWriter
+def save_mlflow_run_id(file_path, run_id):
+    with open(file_path, 'w') as f:
+        json.dump({'run_id': run_id}, f)
 
-class TensorboardCallback(BaseCallback):
-    def __init__(self, log_dir, timestep_file):
-        super(TensorboardCallback, self).__init__()
-        self.log_dir = log_dir
+def load_mlflow_run_id(file_path):
+    try:
+        with open(file_path, 'r') as f:
+            data = json.load(f)
+            return data['run_id']
+    except FileNotFoundError:
+        return None
+
+class MLflowCallback(BaseCallback):
+    def __init__(self, experiment_name, run_id_file, timestep_file):
+        super().__init__()
+        self.experiment_name = experiment_name
+        self.run_id_file = run_id_file
         self.timestep_file = timestep_file
-        self.writer = None
         self.total_timesteps = 0
+        self.check_freq = 1000
+        self.episode_rewards = []
+        self.current_episode_reward = 0
+        self.episode_lengths = []
+        self.current_episode_length = 0
 
     def _on_training_start(self):
-        self.total_timesteps = load_total_timesteps(self.timestep_file)
-        self.writer = SummaryWriter(log_dir=self.log_dir)
+        self.total_timesteps = load_last_timestep(self.timestep_file)
+
+        run_id = load_mlflow_run_id(self.run_id_file)
+        if run_id is not None:
+            mlflow.start_run(run_id=run_id)
+        else:
+            mlflow.set_experiment(self.experiment_name)
+            mlflow_run = mlflow.start_run()
+            save_mlflow_run_id(self.run_id_file, mlflow_run.info.run_id)
 
     def _on_step(self):
         self.total_timesteps += 1
-        if self.total_timesteps % 1000 == 0:
-            self.writer.add_scalar("reward", self.locals["rewards"].mean(), self.total_timesteps)
-            # Add more metrics as needed
+        reward = self.locals['rewards'][0]  # Assuming a single environment
+        done = self.locals['dones'][0]
 
+        # Update current episode stats
+        self.current_episode_reward += reward
+        self.current_episode_length += 1
+
+        # Check for episode completion
+        if done:
+            self.episode_rewards.append(self.current_episode_reward)
+            self.episode_lengths.append(self.current_episode_length)
+            self.current_episode_reward = 0
+            self.current_episode_length = 0
+
+            # Log the episode stats
+            mlflow.log_metric('episode_reward', self.episode_rewards[-1], step=self.total_timesteps)
+            mlflow.log_metric('episode_length', self.episode_lengths[-1], step=self.total_timesteps)
         return True
 
     def _on_training_end(self):
-        save_total_timesteps(self.timestep_file, self.total_timesteps)
-        if self.writer:
-            self.writer.close()
-
-    def _on_training_end(self):
-        # Close the writer
-        if self.writer:
-            self.writer.close()
+        save_last_timestep(self.timestep_file, self.total_timesteps)
+        mlflow.end_run()

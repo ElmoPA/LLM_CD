@@ -7,7 +7,12 @@ from gymnasium.core import Env
 import numpy as np
 from dm_control import suite
 from dm_env import specs
+from utils.custom_environment import cmu_humanoid_run_gaps
 
+def create_env():
+    env = cmu_humanoid_run_gaps()
+    wrapped_env = DMCGym(env)  # Wrapping the environment
+    return wrapped_env
 
 def _spec_to_box(spec, dtype=np.float32):
     def extract_min_max(s):

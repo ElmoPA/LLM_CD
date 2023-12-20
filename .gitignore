@@ -1,4 +1,4 @@
 /logs/
-/examples/
 __pycache__/
+/mlruns/
 ppo_humanoid.zip

@@ -1,41 +1,51 @@
+import os
 import argparse
 from utils.custom_environment import cmu_humanoid_run_gaps
 from utils.DMC_Gym import DMCGym
-from utils.callbacks import TensorboardCallback 
+from utils.callbacks import MLflowCallback
 from dm_control.composer.variation import distributions
+from stable_baselines3.common.env_util import make_vec_env
 from stable_baselines3 import PPO
+from stable_baselines3.common.callbacks import CheckpointCallback
+import gym
+from gym.envs.registration import register
 
+from stable_baselines3.common.vec_env import SubprocVecEnv, DummyVecEnv
 
-env_kwargs = {
-    "target_velocity": 3.0,
-    "gap_length": distributions.Uniform(.5, 1.25),
-    "corridor_length": 100,
-}
+def make_env():
+    env = cmu_humanoid_run_gaps()
+    return DMCGym(env)
 
-parser = argparse.ArgumentParser(description='parameters input')
-parser.add_argument('--n', type=str)
-parser.add_argument('--lr', type=float, default=1e-3)
-parser.add_argument('--ts', type=int, default=100000)
-parser.add_argument('--bs', type=int, default=1024)
-args = parser.parse_args()
+if __name__ == '__main__':
+    num_envs = 8
+    vec_env = DummyVecEnv([make_env for _ in range(num_envs)])
 
-env = cmu_humanoid_run_gaps()
-action_spec = env.action_spec()
-observation_spec = env.observation_spec()
-env_wrap = DMCGym(env)
+    env_kwargs = {
+        "target_velocity": 3.0,
+        "gap_length": distributions.Uniform(.5, 1.25),
+        "corridor_length": 100,
+    }
 
-policy_kw = dict(net_arch=dict(pi=[512, 512, 512, 512], vf=[512, 512, 512, 512]))
-model = PPO("MlpPolicy", env_wrap,
-            learning_rate=args.lr, 
-            verbose=1, 
-            ent_coef=0.01,
-            vf_coef=1,
-            policy_kwargs=policy_kw,
-            batch_size=args.bs)
+    parser = argparse.ArgumentParser(description='parameters input')
+    parser.add_argument('--d', type=str)
+    parser.add_argument('--lr', type=float, default=1e-4)
+    parser.add_argument('--ts', type=int, default=100000)
+    parser.add_argument('--bs', type=int, default=64)
+    parser.add_argument('--n', type=str)
+    args = parser.parse_args()
 
-
-model.learn(total_timesteps=args.ts,
-            progress_bar=True,
-            callback=TensorboardCallback('logs/' + args.n, 'logs/time_step.json'))
-model.save("logs/" + args.n)
-
+    policy_kw = dict(net_arch=dict(pi=[512, 512, 512, 512], vf=[512, 512, 512, 512]))
+    model = PPO("MlpPolicy", vec_env,
+                learning_rate=args.lr, 
+                verbose=1, 
+                ent_coef=0.01,
+                vf_coef=1,
+                policy_kwargs=policy_kw,
+                batch_size=args.bs)
+    
+    model.learn(total_timesteps=args.ts,
+                progress_bar=True,
+                callback=MLflowCallback(args.n,
+                                  os.path.join(args.d, "mlflow_id.json"),
+                                  os.path.join(args.d, "time_step.json")))
+    model.save(os.path.join(args.d, args.n + "0"))

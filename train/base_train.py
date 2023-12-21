@@ -12,34 +12,34 @@ from gym.envs.registration import register
 
 from stable_baselines3.common.vec_env import SubprocVecEnv, DummyVecEnv
 
-def make_env():
-    env = cmu_humanoid_run_gaps()
+def make_env(env_kwargs):
+    env = cmu_humanoid_run_gaps(random_state=0, **env_kwargs)
     return DMCGym(env)
 
 if __name__ == '__main__':
-    num_envs = 4 
-    vec_env = SubprocVecEnv([make_env for _ in range(num_envs)])
-
+    
+    parser = argparse.ArgumentParser(description='parameters input')
+    parser.add_argument('--d', type=str)
+    parser.add_argument('--lr', type=float, default=3e-4)
+    parser.add_argument('--ts', type=int, default=100000)
+    parser.add_argument('--bs', type=int, default=64)
+    parser.add_argument('--n', type=str)
+    parser.add_argument('--g', type=float)
+    args = parser.parse_args()
+    num_envs = 1 
     env_kwargs = {
         "target_velocity": 3.0,
         "gap_length": distributions.Uniform(.5, 1.25),
         "corridor_length": 100,
     }
-
-    parser = argparse.ArgumentParser(description='parameters input')
-    parser.add_argument('--d', type=str)
-    parser.add_argument('--lr', type=float, default=1e-4)
-    parser.add_argument('--ts', type=int, default=100000)
-    parser.add_argument('--bs', type=int, default=256)
-    parser.add_argument('--n', type=str)
-    args = parser.parse_args()
-
+    if args.g:
+        env_kwargs["gap_length"] = args.g
+    vec_env = make_env(env_kwargs)
+    
     policy_kw = dict(net_arch=dict(pi=[512, 512, 512, 512], vf=[512, 512, 512, 512]))
     model = PPO("MlpPolicy", vec_env,
                 learning_rate=args.lr, 
-                verbose=1, 
-                ent_coef=0.01,
-                vf_coef=1,
+                verbose=1,
                 policy_kwargs=policy_kw,
                 batch_size=args.bs)
     

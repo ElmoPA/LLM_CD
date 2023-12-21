@@ -32,7 +32,7 @@ observation_spec = env.observation_spec()
 env_wrap = DMCGym(env)
 print(check_env(env_wrap))
 
-model = PPO.load("logs/rl_model_700000_steps.zip")
+model = PPO.load("logs/enter/enter28.zip")
 model.set_env(env_wrap)
 
 vec_env = model.get_env()

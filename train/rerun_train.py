@@ -2,8 +2,8 @@ import os
 import subprocess
 import time
 
-num_timesteps_iter = 100000
-name = "enter"
+num_timesteps_iter = 10000
+name = "test_re"
 path = "logs/"
 os.makedirs(path + name, exist_ok=True)
 path = os.path.join(path, name)

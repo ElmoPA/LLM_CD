@@ -17,8 +17,8 @@ def make_env():
     return DMCGym(env)
 
 if __name__ == '__main__':
-    num_envs = 8
-    vec_env = DummyVecEnv([make_env for _ in range(num_envs)])
+    num_envs = 4 
+    vec_env = SubprocVecEnv([make_env for _ in range(num_envs)])
 
     env_kwargs = {
         "target_velocity": 3.0,
@@ -30,7 +30,7 @@ if __name__ == '__main__':
     parser.add_argument('--d', type=str)
     parser.add_argument('--lr', type=float, default=1e-4)
     parser.add_argument('--ts', type=int, default=100000)
-    parser.add_argument('--bs', type=int, default=64)
+    parser.add_argument('--bs', type=int, default=256)
     parser.add_argument('--n', type=str)
     args = parser.parse_args()
 

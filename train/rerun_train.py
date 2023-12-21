@@ -11,7 +11,7 @@ subprocess.run(["python3", "train/base_train.py",
                 "--d", path,
                 "--n", name,
                 "--ts", str(num_timesteps_iter)])
-for i in range(9):
+for i in range(29):
     subprocess.run(["python3", "train/load_train.py",
                     "--ld", os.path.join(path, name + str(i)),
                     "--s", os.path.join(path, name + str(i+1)),

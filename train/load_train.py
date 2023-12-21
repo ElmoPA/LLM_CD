@@ -5,15 +5,15 @@ from utils.DMC_Gym import DMCGym
 from utils.callbacks import MLflowCallback
 from dm_control.composer.variation import distributions
 from stable_baselines3 import PPO
-from stable_baselines3.common.vec_env import DummyVecEnv
+from stable_baselines3.common.vec_env import DummyVecEnv, SubprocVecEnv
 
 def make_env():
     env = cmu_humanoid_run_gaps()
     return DMCGym(env)
 
 if __name__ == '__main__':
-  num_envs = 8
-  vec_env = DummyVecEnv([make_env for _ in range(num_envs)])
+  num_envs = 4
+  vec_env = SubprocVecEnv([make_env for _ in range(num_envs)])
   env_kwargs = {
       "target_velocity": 3.0,
       "gap_length": distributions.Uniform(.5, 1.25),

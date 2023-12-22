@@ -20,7 +20,7 @@ if __name__ == '__main__':
     
     parser = argparse.ArgumentParser(description='parameters input')
     parser.add_argument('--d', type=str)
-    parser.add_argument('--lr', type=float, default=3e-4)
+    parser.add_argument('--lr', type=float, default=(2e-4))
     parser.add_argument('--ts', type=int, default=100000)
     parser.add_argument('--bs', type=int, default=64)
     parser.add_argument('--n', type=str)
@@ -40,6 +40,7 @@ if __name__ == '__main__':
     model = PPO("MlpPolicy", vec_env,
                 learning_rate=args.lr, 
                 verbose=1,
+                ent_coef=0.02,
                 policy_kwargs=policy_kw,
                 batch_size=args.bs)
     

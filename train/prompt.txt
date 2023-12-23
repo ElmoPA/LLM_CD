@@ -1,0 +1,41 @@
+Context: We are training an agent to pakour through gaps. I am using the environment from dm_control, and PPO algorithm from stablebaseline3 to control the agent.
+The net architecture used is four 512 MLP layers for both the value function and the contorl policy.
+Objective: Your objective is to output a training script which would best train the agent to pakour through an obstacle course. You are only allow to modify the
+parameters associated with the gap length, learning rate, and timestep executed by each script.
+
+Given Code:
+import os
+import subprocess
+
+num_timesteps_iter = 100000
+name = "curr"
+path = "logs/"
+os.makedirs(path + name, exist_ok=True)
+path = os.path.join(path, name)
+subprocess.run(["python3", "train/base_train.py",
+                "--d", path,
+                "--n", name,
+                "--ts", str(num_timesteps_iter)])
+gap = 0
+intervals = {30:0.5, 40:1.0, 50:1.5, 60: 2.0, 70: 2.5}
+for i in range(69):
+    if i in intervals:
+        gap = intervals[i]
+
+    subprocess.run(["python3", "train/load_train.py",
+                    "--ld", os.path.join(path, name + str(i)),
+                    "--s", os.path.join(path, name + str(i+1)),
+                    "--d", path,
+                    "--n", name,
+                    "--g", gap,
+                    "--ts", str(num_timesteps_iter)])
+    subprocess.run(["python3", "train/test.py",
+                    "--ld", os.path.join(path, name + str(i)),
+                    "--g", gap,
+                    "--d", path])
+
+Explanation of key elements:
+The --ts tag, modifies the number of the timestep the script runs. By default it is set to 100,000.
+The --g tag, specifies the possible distribution of gaps that occur. Internally, each function have a uniform distribution of the possible gap lengths generated.
+By default, it is set from 0.5 to 2.5 uniform distribution.
+The --lr tag, specifies the learning rate of that script. But default it is set to 1e-4

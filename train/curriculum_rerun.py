@@ -3,7 +3,7 @@ import subprocess
 import time
 
 num_timesteps_iter = 100000
-name = "curr"
+name = "final_cur"
 path = "logs/"
 os.makedirs(path + name, exist_ok=True)
 path = os.path.join(path, name)
@@ -14,7 +14,7 @@ subprocess.run(["python3", "train/base_train.py",
                 "--g", str(gap),
                 "--ts", str(num_timesteps_iter)])
 intervals = {30:0.5, 40:1.0, 50:1.5, 60: 2.0, 70: 2.5}
-for i in range(69):
+for i in range(99):
     if i in intervals:
         gap = intervals[i]
 

@@ -1,9 +1,13 @@
 Context: We are training an agent to pakour through gaps. I am using the environment from dm_control, and PPO algorithm from stablebaseline3 to control the agent.
-The net architecture used is four 512 MLP layers for both the value function and the contorl policy.
-Objective: Your objective is to output a training script which would best train the agent to pakour through an obstacle course. You are only allow to modify the
-parameters associated with the gap length, learning rate, and timestep executed by each script.
-
-Given Code:
+The net architecture used is four 512 MLP layers for both the value function and the control policy. 
+The reward function is as follows, the agent is rewarded for staying alive. It dies by falling to the ground. It also rewarded for reaching
+the objective speed of 3.0. 
+The current observation of the agent with the example code is as follows, the agent coverged
+to a behavior where it maximize its falling time, it is stuck at this local maxima for 6 million timestep with no sign of 
+achieving a walking, or standing behavior.
+Objective: Your objective is to output a script that trains the agent to pakour through the gaps. The parameters which
+you can modify are as follows below.
+Example Code:
 import os
 import subprocess
 
@@ -39,3 +43,4 @@ The --ts tag, modifies the number of the timestep the script runs. By default it
 The --g tag, specifies the possible distribution of gaps that occur. Internally, each function have a uniform distribution of the possible gap lengths generated.
 By default, it is set from 0.5 to 2.5 uniform distribution.
 The --lr tag, specifies the learning rate of that script. But default it is set to 1e-4
+The --ent tag, specifies the entropy coefficient. This by default set to 0 and can only be assign to base_train.py.

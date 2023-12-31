@@ -1,5 +1,5 @@
 import functools
-
+from .custom_task import modifiedCorridor
 from dm_control import composer
 from dm_control.composer.variation import distributions
 from dm_control.locomotion.arenas import corridors as corr_arenas
@@ -25,7 +25,7 @@ def cmu_humanoid_run_gaps(random_state=None, **kwargs):
       corridor_width=10,
       corridor_length=task["corridor_length"])
 
-  task = corr_tasks.RunThroughCorridor(
+  task = modifiedCorridor(
       walker=walker,
       arena=arena,
       walker_spawn_position=(0.5, 0, 0),
@@ -37,3 +37,7 @@ def cmu_humanoid_run_gaps(random_state=None, **kwargs):
                               task=task,
                               random_state=random_state,
                               strip_singleton_obs_buffer_dim=True)
+
+
+
+

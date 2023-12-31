@@ -34,7 +34,7 @@ if __name__ == '__main__':
   while True:
     action, _states = model.predict(obs)
     obs, rw, dn, inf = vec_env.step(action)
-    rw += total_rw
+    total_rw += rw
     if dn:
       break
 

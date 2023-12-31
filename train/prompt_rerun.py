@@ -32,7 +32,7 @@ for i in range(69):
                     "--n", name,
                     "--g", gap,
                     "--ts", str(num_timesteps_iter),
-                    "--lr", str(learning_rate)])
+                    ])
     subprocess.run(["python3", "train/test.py",
                     "--ld", os.path.join(path, name + str(i)),
                     "--g", gap,

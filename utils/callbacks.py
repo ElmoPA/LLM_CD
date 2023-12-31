@@ -21,8 +21,8 @@ class SummaryWriterCallback(BaseCallback):
         self.overall += self.locals['rewards']
         
         if self.n_calls % self._log_freq == 0:
-            self.tb_formatter.writer.add_scalar('Average Return', self.overall/self.n_calls, self.num_timesteps)
-            self.tb_formatter.writer.add_scalar('Return', self.locals['rewards'], self.num_timesteps)
+            self.tb_formatter.writer.add_scalar('Average Return', self.overall/self.n_calls, self.n_calls)
+            self.tb_formatter.writer.add_scalar('Return', self.locals['rewards'], self.n_calls)
         return True
 
 class CurrentCheckCallback(BaseCallback):

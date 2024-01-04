@@ -43,6 +43,12 @@ def _flatten_obs(obs, dtype=np.float32):
     return np.concatenate(obs_pieces, axis=0).astype(dtype)
 
 
+def _filter_obs(raw_obs):
+    temp_obs = raw_obs
+    if 'walker/egocentric_camera' in temp_obs:
+        del temp_obs['walker/egocentric_camera']
+    return temp_obs
+
 class DMCGym(Env):
     def __init__(
         self,
@@ -67,8 +73,10 @@ class DMCGym(Env):
         self.render_width = render_width
         self.render_camera_id = render_camera_id
 
+        filtered_observations = [obs for obs in self._env.observation_spec().values() if obs.name != 'walker/egocentric_camera']
 
-        self._observation_space = _spec_to_box(self._env.observation_spec().values())
+        self._observation_space = _spec_to_box(filtered_observations)
+        print(self._observation_space)
         self._action_space = _spec_to_box([self._env.action_spec()])
 
         # set seed if provided with task_kwargs
@@ -99,7 +107,8 @@ class DMCGym(Env):
             action = action.astype(np.float32)
         assert self._action_space.contains(action)
         timestep = self._env.step(action)
-        observation = _flatten_obs(timestep.observation)
+        observation = _flatten_obs(_filter_obs(timestep.observation))
+        print(observation.shape)
         reward = timestep.reward
         termination = False  # we never reach a goal
         truncation = timestep.last()
@@ -115,7 +124,8 @@ class DMCGym(Env):
         if options:
             logging.warn("Currently doing nothing with options={:}".format(options))
         timestep = self._env.reset()
-        observation = _flatten_obs(timestep.observation)
+        observation = _flatten_obs(_filter_obs(timestep.observation))
+        print(observation.shape)
         info = {}
         return observation, info
 

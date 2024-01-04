@@ -39,11 +39,11 @@ if __name__ == '__main__':
         env_kwargs["gap_length"] = args.g
     vec_env = make_env(env_kwargs)
     net_arch = {
-    'shared': [10000, 10000, 5000, 5000],  # Shared layers
-    'pi': [5000, 5000, 5000, 2500, 1000, 1000, 500],  # Separate layers for the actor
-    'vf': [5000, 2500, 1000, 500, 250]   # Separate layers for the critic
+    'shared': [256],  # Shared layers
+    'pi': [512, 512, 512, 256, 128],  # Separate layers for the actor
+    'vf': [256 ,256, 128, 64, 32]   # Separate layers for the critic
     }
-    model = PPO(ActorCriticPolicy, vec_env,
+    model = PPO('MlpPolicy', vec_env,
                 learning_rate=args.lr, 
                 verbose=1,
                 ent_coef=0.005,

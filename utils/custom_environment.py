@@ -17,7 +17,7 @@ def cmu_humanoid_run_gaps(random_state=None, **kwargs):
     task[param] = value
   gap_length = task["gap_length"]
   walker = cmu_humanoid.CMUHumanoidPositionControlled(
-      observable_options={'egocentric_camera': dict(enabled=True)})
+      observable_options={'egocentric_camera': dict(enabled=False)})
 
   arena = corr_arenas.GapsCorridor(
       platform_length=distributions.Uniform(.5, 2.5),

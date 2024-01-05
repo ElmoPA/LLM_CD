@@ -32,13 +32,13 @@ observation_spec = env.observation_spec()
 env_wrap = DMCGym(env)
 print(check_env(env_wrap))
 
-model = PPO.load("logs/final_cur/final_cur18.zip")
+model = PPO.load("logs/stand/stand7.zip")
 model.set_env(env_wrap)
 
 vec_env = model.get_env()
 vec_env = VecVideoRecorder(vec_env, video_folder,
                        record_video_trigger=lambda x: x == 0, video_length=video_length,
-                       name_prefix=f"curriculum")
+                       name_prefix=f"stand")
 obs = vec_env.reset()
 for _ in range(video_length + 1):
   action, _states = model.predict(obs)

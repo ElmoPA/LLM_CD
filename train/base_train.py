@@ -22,9 +22,9 @@ if __name__ == '__main__':
     
     parser = argparse.ArgumentParser(description='parameters input')
     parser.add_argument('--d', type=str)
-    parser.add_argument('--lr', type=float, default=(1e-4))
+    parser.add_argument('--lr', type=float, default=0.00004)
     parser.add_argument('--ts', type=int, default=100000)
-    parser.add_argument('--bs', type=int, default=1024)
+    parser.add_argument('--bs', type=int, default=256)
     parser.add_argument('--ent', type=float, default=0.0)
     parser.add_argument('--n', type=str)
     parser.add_argument('--g', type=float)
@@ -40,13 +40,13 @@ if __name__ == '__main__':
     vec_env = make_env(env_kwargs)
     net_arch = {
     'shared': [256],  # Shared layers
-    'pi': [512, 512, 512, 256, 128],  # Separate layers for the actor
+    'pi': [512, 512, 512, 512, 256, 128],  # Separate layers for the actor
     'vf': [256 ,256, 128, 64, 32]   # Separate layers for the critic
     }
     model = PPO('MlpPolicy', vec_env,
                 learning_rate=args.lr, 
                 verbose=1,
-                ent_coef=0.005,
+                ent_coef=0.002,
                 policy_kwargs={'net_arch': net_arch},
                 batch_size=args.bs)
     

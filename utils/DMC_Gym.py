@@ -76,7 +76,6 @@ class DMCGym(Env):
         filtered_observations = [obs for obs in self._env.observation_spec().values() if obs.name != 'walker/egocentric_camera']
 
         self._observation_space = _spec_to_box(filtered_observations)
-        print(self._observation_space)
         self._action_space = _spec_to_box([self._env.action_spec()])
 
         # set seed if provided with task_kwargs
@@ -108,11 +107,15 @@ class DMCGym(Env):
         assert self._action_space.contains(action)
         timestep = self._env.step(action)
         observation = _flatten_obs(_filter_obs(timestep.observation))
-        print(observation.shape)
         reward = timestep.reward
         termination = False  # we never reach a goal
         truncation = timestep.last()
         info = {"discount": timestep.discount}
+        for obs in observation:
+            if np.isnan(obs):
+                print("nan")
+            if np.isinf(obs):
+                print("inf")
         return observation, reward, termination, truncation, info
 
     def reset(self, seed=None, options=None):
@@ -125,7 +128,11 @@ class DMCGym(Env):
             logging.warn("Currently doing nothing with options={:}".format(options))
         timestep = self._env.reset()
         observation = _flatten_obs(_filter_obs(timestep.observation))
-        print(observation.shape)
+        for obs in observation:
+            if np.isnan(obs):
+                print("nan")
+            if np.isinf(obs):
+                print("inf")
         info = {}
         return observation, info
 
